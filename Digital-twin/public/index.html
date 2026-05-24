@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Drilling System</title>
+  <link rel="icon" href="data:,">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    #mainMenu {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    #operationsTestBtn {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      z-index: 30;
+      background: rgba(0, 200, 255, 0.2);
+      border: 1px solid rgba(0, 200, 255, 0.5);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: none; /* hidden by default */
+    }
+
+    #mainMenu.active {
+      display: flex;
+    }
+
+    #mainMenu h1 {
+      color: #e94560;
+      font-size: 3.5rem;
+      margin-bottom: 60px;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+      max-width: 1200px;
+    }
+
+    .menu-card {
+      background: rgba(10, 26, 46, 0.8);
+      border: 1px solid rgba(120, 200, 255, 0.25);
+      border-radius: 15px;
+      padding: 40px 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.3s;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0, 30, 80, 0.5);
+    }
+
+    .menu-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 45%;
+      background: linear-gradient(180deg,
+        rgba(255, 255, 255, 0.12) 0%,
+        rgba(255, 255, 255, 0.04) 40%,
+        transparent 100%);
+      border-radius: 15px 15px 0 0;
+      pointer-events: none;
+    }
+
+    .menu-card::after {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(135deg,
+        rgba(0, 220, 255, 0.4) 0%,
+        transparent 35%,
+        transparent 65%,
+        rgba(0, 180, 255, 0.3) 100%);
+      border-radius: 17px;
+      z-index: -1;
+      opacity: 0.7;
+    }
+
+    .corner-accent {
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      border: 2px solid rgba(0, 200, 255, 0.4);
+      pointer-events: none;
+    }
+    .corner-tl { top: 8px; left: 8px; border-right: none; border-bottom: none; }
+    .corner-tr { top: 8px; right: 8px; border-left: none; border-bottom: none; }
+    .corner-bl { bottom: 8px; left: 8px; border-right: none; border-top: none; }
+    .corner-br { bottom: 8px; right: 8px; border-left: none; border-top: none; }
+
+    .menu-card h2 {
+      color: #fff;
+      font-size: 1.5rem;
+      margin: 0;
+      position: relative;
+      z-index: 1;
+      text-shadow: 0 0 10px rgba(0, 200, 255, 0.3);
+    }
+
+    .menu-card:hover {
+      background: rgba(0, 30, 80, 0.6);
+      border-color: rgba(0, 200, 255, 0.5);
+      transform: translateY(-10px);
+      box-shadow: 0 12px 50px rgba(0, 30, 80, 0.7);
+    }
+
+    .menu-card:hover::after {
+      opacity: 1;
+    }
+
+    #rigContainer {
+      position: fixed;
+      inset: 0;
+      display: none;
+      background: #87CEEB;
+    }
+    #testModePanel {
+      pointer-events: auto;
+    }
+
+    #testModeChartPanel {
+      pointer-events: none;
+    }
+
+    #rigContainer.active {
+      display: block;
+    }
+
+
+    /* ✅ NEW GLASS PANEL */
+    #glassyPanelFrame {
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      width: 700px;
+      height: 600px;
+      border: none;
+      display: none;
+      z-index: 15;
+    }
+
+    #glassyPanelFrame.active {
+      display: block;
+    }
+
+    #backBtn {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      z-index: 20;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: none;
+    }
+
+    #backBtn.active {
+      display: block;
+    }
+
+     canvas {
+       width: 100% !important;
+       height: 100% !important;
+       position: absolute;
+       top: 0;
+       left: 0;
+     }
+
+     #infoBox {
+       position: absolute;
+       background: rgba(0, 0, 0, 0.8);
+       color: white;
+       padding: 8px 12px;
+       border-radius: 6px;
+       pointer-events: none;
+       z-index: 10;
+       display: none;
+       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+       font-size: 14px;
+       max-width: 200px;
+     }
+
+  </style>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
+      "three/examples/jsm/": "https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+
+<body>
+
+  <!-- MENU -->
+  <div id="mainMenu" class="active">
+    <h1>Digital Drilling System</h1>
+    <div class="menu-grid">
+      <div class="menu-card" onclick="openModule('Drill Rig')">
+        <div class="corner-accent corner-tl"></div>
+        <div class="corner-accent corner-tr"></div>
+        <div class="corner-accent corner-bl"></div>
+        <div class="corner-accent corner-br"></div>
+        <h2>Drill Rig</h2>
+      </div>
+      <div class="menu-card" onclick="openModule('operations')">
+        <div class="corner-accent corner-tl"></div>
+        <div class="corner-accent corner-tr"></div>
+        <div class="corner-accent corner-bl"></div>
+        <div class="corner-accent corner-br"></div>
+        <h2>Drilling Operations</h2>
+      </div>
+      <div class="menu-card" onclick="openModule('Drill Risks')">
+        <div class="corner-accent corner-tl"></div>
+        <div class="corner-accent corner-tr"></div>
+        <div class="corner-accent corner-bl"></div>
+        <div class="corner-accent corner-br"></div>
+        <h2>Drill Risks</h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- UI -->
+  <button id="backBtn">← Back</button>
+  <button id="operationsTestBtn">Test Mode</button>
+  <div id="rigContainer"></div>
+  <div id="infoBox">
+    <div id="infoTitle" style="font-weight: bold; margin-bottom: 4px;"></div>
+    <div id="infoText"></div>
+  </div>
+
+  <!-- PANELS -->
+  <iframe id="glassyPanelFrame" src="glassy_panel.html"></iframe>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <script type="module" src="./src/core/index.js"></script>
+  <script type="module">
+  import { startTestMode } from './src/modules/oper_testMode.js';
+
+  const btn = document.getElementById('operationsTestBtn');
+
+  btn.onclick = () => {
+    startTestMode();
+  };
+  </script>
+
+  <script>
+    const mainMenu = document.getElementById('mainMenu');
+    const rigContainer = document.getElementById('rigContainer');
+    const glassyPanelFrame = document.getElementById('glassyPanelFrame');
+    const backBtn = document.getElementById('backBtn');
+
+    window.currentModule = 'Drill Rig';
+
+    window.openModule = function(module) {
+      window.currentModule = module;
+
+      if (module === 'Drill Risks') {
+        // Do nothing for now
+        return;
+      }
+
+      rigContainer.classList.add('active');
+      rigContainer.style.display = 'block';
+
+      if (module === 'Drill Rig') {
+        mainMenu.classList.remove('active');
+
+        glassyPanelFrame.classList.remove('active');
+        glassyPanelFrame.style.display = 'none';
+        backBtn.classList.add('active');
+      }
+      if (module === 'operations') {
+        mainMenu.classList.remove('active');
+
+        glassyPanelFrame.classList.add('active');
+        glassyPanelFrame.style.display = 'block';
+        backBtn.classList.add('active');
+      }
+
+
+      if (typeof window.setModule === 'function') {
+        window.setModule(module);
+      }
+
+      if (typeof window.initThreeJS === 'function') {
+        window.initThreeJS();
+      }
+    };
+
+    backBtn.onclick = () => {
+      mainMenu.classList.add('active');
+
+      rigContainer.classList.remove('active');
+      rigContainer.style.display = 'none';
+
+      
+      glassyPanelFrame.classList.remove('active');
+
+      backBtn.classList.remove('active');
+      document.getElementById('operationsTestBtn').style.display = 'none';
+
+    };
+
+  </script>
+
+</body>
+</html>
+
+
+
