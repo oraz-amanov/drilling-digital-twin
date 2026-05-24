@@ -1,7 +1,7 @@
 # Drilling Digital Twin with ROP Prediction
 
 ## Overview
-This project aims to build a simplified digital twin of a drilling system and predict Rate of Penetration (ROP) using data-driven models.
+This project aims to build a drilling rig simulation platform based on digital twin technology.
 
 ## Features
 - Input parameters: WOB, RPM.
